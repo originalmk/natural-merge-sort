@@ -20,26 +20,29 @@ A > B if after removing all common records from A and B, maximum number from A i
 3. Check if series counter is 1 and if not then go back to step 1.
 
 ## Commands
-Currently all commands are named using Polish words, but it will be changed soon.
-- pomoc
+- help
 	- displays the help page
-- wyczyść <path_to_tape>
+- clear <path_to_tape>
 	- clears/deletes a tape
-	- Example: wyczyść fs/t1
-- genlos <path_to_tape> <record_count> [options]
+	- Example: clear fs/t1
+- genrandom <path_to_tape> <record_count> [options]
 	- adds record_count random records at the end of the tape
 	- if 'o' is provided as an option then tape is overwritten with these newly generated random records
-	- Example: genlos fs/t1 30 o
-- wczytaj <path_to_tape> <path_to_test_file>
+	- Example: genrandom fs/t1 30 o
+- add <path_to_tape> <numbers, ...>
+    - adds new record (set created from 1 to 15 numbers in range 0-255) at the
+      end of the tape
+    - Example: add fs/t1 7 25 3 4 5
+- load <path_to_tape> <path_to_test_file>
 	- adds the records described in test file to the tape
-	- Example: wczytaj fs/t1 fs/testfile
-- sortuj <path_to_tape> [options]
+	- Example: load fs/t1 fs/testfile
+- sort <path_to_tape> [options]
 	- sorts the provided tape displaying its contents before and after sorting. When option 'v' is provided then tape will be displayed after each phase
-	- Example: sortuj fs/t1 v
-- wyświetl <path_to_tape>
+	- Example: sort fs/t1 v
+- display <path_to_tape>
 	- displays the tape's records and information how many series and records it contains. Also when displaying records it is shown when each of series end
-	- Example: wyświetl fs/t1
-- wyjście
+	- Example: display fs/t1
+- exit
 	- exists program gracefully
 
 ## Test file format

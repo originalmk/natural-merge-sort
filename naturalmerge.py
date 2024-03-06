@@ -138,7 +138,7 @@ class Record:
         return result
 
     def __repr__(self):
-        return f"Zbiór {sorted(self.items, reverse=True)}"
+        return f"Set {sorted(self.items, reverse=True)}"
 
     def __lt__(self, other):
         if other is None:
@@ -195,7 +195,7 @@ class RunIterator:
 
 
 def print_tape(file_name):
-    print(f"[ .. ] Taśma {file_name}\n")
+    print(f"[ .. ] Tape {file_name}\n")
 
     buffer = ReadBuffer(file_name)
     series_count = 0
@@ -207,10 +207,10 @@ def print_tape(file_name):
             print(record)
             records_count += 1
         series_count += 1
-        print("~ koniec biegu ~")
+        print("~ series end ~")
 
-    print(f"\n[ ^- ] Liczba biegów: {series_count}")
-    print(f"[ ^- ] Liczba rekordów: {records_count}")
+    print(f"\n[ ^- ] Series count: {series_count}")
+    print(f"[ ^- ] Records count: {records_count}")
 
 
 def print_runs(file_name, n):
@@ -359,53 +359,53 @@ def tape_sort(tape_path, print_after_phase=False):
         writes_count += merge_info.writes_count
 
         if print_after_phase:
-            print(f"[ -v ] Faza {phases_count + 1}")
+            print(f"[ -v ] Phase {phases_count + 1}")
             print_tape(tape_path)
-        print(f"[ .. ] {runs_written} biegów pozostało")
+        print(f"[ .. ] {runs_written} series remaining")
         phases_count += 1
 
     return SortInfo(reads_count, writes_count, phases_count)
 
 help_page = """
-pomoc
-    wyświetla tę stronę
-wyczyść <ścieżka_do_taśmy>
-    usuwa taśmę
-genlos <ścieżka_do_taśmy> <liczba_rekordów> [opcje]
-    dopisuje losowo wygenerowane rekordy na taśmę
-        jeżeli jako opcja podane zostanie 'o', wówczas taśma zostanie nadpisana
-        nowowygenerowanymi rekordami
-dopisz <ścieżka_do_taśmy> <liczba, ...>
-    dopisuje nowy rekord na koniec taśmy, jako
-    <liczba, ...> należy podać co najmniej 1 liczbę, a
-    maksymalnie 15, każdą z zakresu 0-255
-wczytaj <ścieżka_do_taśmy> <ścieżka_do_pliku>
-    wczytuje rekordy z podanego pliku testowego na taśmę
-sortuj <ścieżka_do_taśmy> [opcje]
-    sortuje podaną taśmę wypisując jej zawartość na
-    początku i na końcu operacji.
-        Gdy zostanie podana opcja 'v', wówczas taśma będzie
-        wyświetlana po każdej z faz
-wyświetl <ścieżka_do_taśmy>
-    wyświetla zawartość taśmy i jej metadane m.in.:
-        liczbę biegów (serii)
-        liczbę rekordów
+help
+    displays the help page
+clear <tape_path>
+    clears (removes) the tape
+genrandom <path_to_tape> <records_count> [options]
+    adds record_count random records at the end of the tape
+        if 'o' is provided as an option then tape is overwritten with these
+        newly generated random records
+add <path_to_tape> <numbers, ...>
+    adds new record (set created from 1 to 15 numbers provided in range 0-255)
+    at the end of the tape
+load <path_to_tape> <path_to_test_file>
+    adds the records described in test file to the tape
+sort <path_to_tape> [options]
+    sorts the provided tape displaying its contents before and after sorting
+        when option 'v' is provided then tape will be displayed after each
+        phase
+display <path_to_tape>
+   displays the tape's records and information how many series and records it
+   contains. Also when displaying records it is shown when each of series
+   ends
+exit
+    gracefully exits
 """
 
-print("\nProjekt SBD - sortowanie metodą scalania naturalnego (2+1)")
-print("Autor: Maciej Krzyżanowski [188872]\n")
+print("\nSorting using natural merge method (2+1)")
+print("Author: Maciej Krzyżanowski\n")
 should_run = True
 while should_run:
     cmd_line = input("> ")
     match cmd_line.split():
-        case ["wyczyść", tape_path]:
-            print(f"[ .. ] Czyszczenie taśmy {tape_path}")
+        case ["clear", tape_path]:
+            print(f"[ .. ] Clearing a tape {tape_path}")
             if os.path.isfile(tape_path):
                 os.remove(tape_path)
-                print(f"[ :) ] Wyczyszczono taśmę")
+                print(f"[ :) ] Cleared the tape")
             else:
-                print(f"[ :( ] Taśma o podanej ścieżce nie istnieje")
-        case ["genlos", tape_path, number_of_records, *options]:
+                print(f"[ :( ] There does not exist a tape at provided path")
+        case ["genrandom", tape_path, number_of_records, *options]:
             if "o" in options: 
                 write_buffer = WriteBuffer(tape_path)
             else:
@@ -421,14 +421,14 @@ while should_run:
                 new_record = Record(new_set)
                 write_buffer.write_next(new_record)
             write_buffer.flush()
-            print(f"[ :) ] Dopisano {number_of_records} nowych rekordów do " +
-                  f"taśmy {tape_path}")
-        case ["wyświetl", tape_path]:
-            print(f"[ :) ] Wyświetlam taśmę {tape_path}")
+            print(f"[ :) ] Added {number_of_records} new records to " +
+                  f"tape {tape_path}")
+        case ["display", tape_path]:
+            print(f"[ :) ] Displaying tape {tape_path}")
             print_tape(tape_path)
-        case ["dopisz", tape_path, *set_elements]:
+        case ["add", tape_path, *set_elements]:
             if len(set_elements) == 0:
-                print("[ :( ] Nie podano ani jednego rekordu")
+                print("[ :( ] No number was given")
                 continue
             set_elements = [int(x) for x in set_elements]
             new_record = Record(set_elements)
@@ -436,22 +436,22 @@ while should_run:
             write_buffer.write_next(new_record)
             write_buffer.flush()
             print(f"[ :) ] Dopisano podany rekord na taśmę")
-        case ["sortuj", tape_path, *options]:
-            print(f"[ .. ] Sortowanie taśmy {tape_path}")
-            print(f"[ -v ] Wyświetlam taśmę przed posortowaniem:")
+        case ["sort", tape_path, *options]:
+            print(f"[ .. ] Sorting tape {tape_path}")
+            print(f"[ -v ] Displaying tape before sorting:")
             print_tape(tape_path)
             if "v" in options:
                 sort_info = tape_sort(tape_path, print_after_phase=True)
             else:
                 sort_info = tape_sort(tape_path)
-            print(f"[ -v ] Wyświetlam taśmę po posortowaniu:")
+            print(f"[ -v ] Displaying tape after sorting:")
             print_tape(tape_path)
-            print(f"[ :) ] Taśma {tape_path} posortowana!")
-            print(f"[ -v ] Metadane sortowania")
-            print(f"[ .. ] Liczba faz {sort_info.phases_count}")
-            print(f"[ .. ] Liczba odczytów {sort_info.reads_count}")
-            print(f"[ .. ] Liczba zapisów {sort_info.writes_count}")
-        case ["wczytaj", tape_path, test_file_path]:
+            print(f"[ :) ] Tape {tape_path} sorted!")
+            print(f"[ -v ] Sorting metadata:")
+            print(f"[ .. ] Phase count: {sort_info.phases_count}")
+            print(f"[ .. ] Reads count: {sort_info.reads_count}")
+            print(f"[ .. ] Writes count: {sort_info.writes_count}")
+        case ["load", tape_path, test_file_path]:
             wb = WriteBuffer(tape_path, append_mode=True)
             count = 0
             with open(test_file_path) as test_file:
@@ -461,12 +461,12 @@ while should_run:
                     wb.write_next(new_record)
                     count += 1
             wb.flush()
-            print(f"[ :) ] Dopisano {count} rekordów na taśmę")
-        case ["pomoc"]:
+            print(f"[ :) ] Added {count} records to tape")
+        case ["help"]:
             print(help_page)
-        case ["wyjście"]:
-            print("[ :) ] Do widzenia!")
+        case ["exit"]:
+            print("[ :) ] Goodbye!")
             should_run = False
         case _:
-            print("[ :( ] Nie znam takiej komendy")
+            print("[ :( ] I don't know such a command")
 
